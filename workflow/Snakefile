@@ -57,16 +57,8 @@ rule calc_avg_brain_size:
                 suffix='avgbrainsize.txt',
                 include_subject_dir=False,
                 include_session_dir=False)
-    run:
-        brain_sizes = []
-        for brain_nii in input.brains:
-            data = nibabel.load(brain_file).get_data()
-            brain_sizes.append((data != 0).sum())        
-            
-        with open(output.txt, 'w') as fp:
-            fp.write("Average brain size is {avg} voxels".format(
-                avg = np.array(brain_sizes).mean()))
-
+    script: 'scripts/calc_avg_brain_size.py'
+        
             
 rule all_participant:
     input:
