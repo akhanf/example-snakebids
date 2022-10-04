@@ -6,7 +6,7 @@ from snakebids.app import SnakeBidsApp
 
 def main():
 
-    app = SnakeBidsApp(Path(__file__).resolve().parent.parent)  # to get repository root
+    app = SnakeBidsApp(Path(__file__).resolve().parent)  # to get repository root
     app.run_snakemake()
 
 
