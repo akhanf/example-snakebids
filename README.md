@@ -10,7 +10,7 @@ This BIDS App uses `bet` to extract the brain from each participant image (at th
 
 ## Usage
 
-The run script for this app is `example/run.py`.
+The run script for this app is `run.py`.
 
 ```
 usage: run.py [-h] [--pybidsdb-dir PYBIDSDB_DIR] [--reset-db] [--force-output]
@@ -90,8 +90,8 @@ PATH OVERRIDE:
 ## To-do
 
  - [x] passes dry-run
- - [ ] try running on actual data
- - [ ] update the dockerfile (current one is from the existing example bids app - haven't modified it)
+ - [x] try running on actual data
+ - [x] update the dockerfile (current one is from the existing example bids app - haven't modified it)
  - [x] add instructions
  - [ ] linting
  - [ ] github actions?
