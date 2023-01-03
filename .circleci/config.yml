@@ -1,0 +1,166 @@
+---
+version: 2
+
+jobs:
+  build:
+    machine:
+      # https://circleci.com/developer/machine/image/ubuntu-2204
+      image: ubuntu-2204:2022.10.2
+
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - my_cache
+
+    - run:
+        name: "Get test data: ds114_test1"
+        command: |
+
+          if [[ ! -d ~/data/ds114_test1 ]]; \
+            then wget -c -O ${HOME}/ds114_test1.tar "https://osf.io/download/zerfq/" && \
+            mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data;
+          fi
+    - run:
+        name: "Get test data: ds114_test2"
+        command: |
+          if [[ ! -d ~/data/ds114_test2 ]]; \
+            then wget -c -O ${HOME}/ds114_test2.tar "https://osf.io/download/eg4ma/" && \
+            mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/data;
+          fi
+    - run:
+        command: |
+          if [[ -e ~/docker/image.tar ]]; \
+            then docker load -i ~/docker/image.tar;
+          fi
+    - run: git describe --tags --always > version
+    - run:
+        name: Build image
+        command: docker build -t snakebids/${CIRCLE_PROJECT_REPONAME,,} .
+        no_output_timeout: 6h
+    - run:
+        name: Save image
+        command: |
+          mkdir -p ~/docker; 
+          docker save "snakebids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
+
+    - save_cache:
+        key: my_cache
+        paths:
+        - ~/docker
+        - ~/data
+
+    - persist_to_workspace:
+        root: ~/docker
+        paths:
+        - image.tar
+
+  test_on_internal_data:
+    docker:
+    - image:  ubuntu-2204:2022.10.2
+
+    steps:
+    - attach_workspace:
+        at: /tmp/workspace
+    - setup_remote_docker
+    - run: docker load -i /tmp/workspace/image.tar
+
+    - run: mkdir -p ${HOME}/outputs1
+    - run: mkdir -p ${HOME}/outputs2
+
+      # print version
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/test_data:/bids_dir \
+            -v ${HOME}/outputs1:/outputs1 \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dir /outputs1 participant --version
+
+      # test on dummy data
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v /test_data:/bids_dir \
+            -v /outputs1:/outputs1 \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dir /outputs1 participant --version  -np -c1          
+
+
+  test_on_real_data:
+    docker:
+    - image:  ubuntu-2204:2022.10.2
+
+    steps:
+    - attach_workspace:
+        at: /tmp/workspace
+    - setup_remote_docker
+    - run: docker load -i /tmp/workspace/image.tar
+
+    - run: mkdir -p ${HOME}/outputs1
+    - run: mkdir -p ${HOME}/outputs2
+
+      # participant level tests for single session dataset
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v ${HOME}/outputs1:/outputs \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+        no_output_timeout: 6h
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v ${HOME}/outputs1:/outputs \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
+        no_output_timeout: 6h
+      # group level test for single session dataset
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v ${HOME}/outputs1:/outputs \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+        no_output_timeout: 6h
+
+      # participant level tests for a longitudinal dataset
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/data/ds114_test2:/bids_dataset \
+            -v ${HOME}/outputs2:/outputs \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+        no_output_timeout: 6h
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/data/ds114_test2:/bids_dataset \
+            -v ${HOME}/outputs2:/outputs \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
+        no_output_timeout: 6h
+      # group level test for a longitudinal dataset
+    - run:
+        command: |
+          docker run -ti --rm --read-only \
+            -v ${HOME}/data/ds114_test2:/bids_dataset \
+            -v ${HOME}/outputs2:/outputs \
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+        no_output_timeout: 6h
+
+    - store_artifacts:
+        path: ~/output1
+    - store_artifacts:
+        path: ~/output2
+
+workflows:
+  version: 2
+  build-test-deploy:
+    jobs:
+    - build
+    - test_on_real_data:
+        requires:
+        - build
+    - test_on_internal_data:
+        requires:
+        - build
+
+# VS Code Extension Version: 1.5.1
