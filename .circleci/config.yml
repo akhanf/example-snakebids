@@ -93,7 +93,7 @@ jobs:
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs1:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02 -c1
         no_output_timeout: 6h
     - run:
         name: group level tests for single session dataset    
@@ -101,7 +101,7 @@ jobs:
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs1:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group -c1
         no_output_timeout: 6h
 
     - run: mkdir -p ${HOME}/outputs2
@@ -111,7 +111,7 @@ jobs:
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test2:/bids_dataset \
             -v ${HOME}/outputs2:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02 -c1
         no_output_timeout: 6h
     - run:
         name: group level tests for a longitudinal dataset       
@@ -119,7 +119,7 @@ jobs:
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test2:/bids_dataset \
             -v ${HOME}/outputs2:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group -c1
         no_output_timeout: 6h
 
     - store_artifacts:
