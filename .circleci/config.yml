@@ -16,7 +16,6 @@ jobs:
     - run:
         name: "Get test data: ds114_test1"
         command: |
-
           if [[ ! -d ~/data/ds114_test1 ]]; \
             then wget -c -O ${HOME}/ds114_test1.tar "https://osf.io/download/zerfq/" && \
             mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data;
@@ -33,16 +32,11 @@ jobs:
           if [[ -e ~/docker/image.tar ]]; \
             then docker load -i ~/docker/image.tar;
           fi
-    - run: git describe --tags --always > version
-    - run:
-        name: Build image
-        command: docker build -t snakebids/${CIRCLE_PROJECT_REPONAME,,} .
-        no_output_timeout: 6h
-    - run:
-        name: Save image
-        command: |
+          git describe --tags --always > version
+          docker build -t snakebids/${CIRCLE_PROJECT_REPONAME,,} .
           mkdir -p ~/docker; 
           docker save "snakebids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
+        no_output_timeout: 6h
 
     - save_cache:
         key: my_cache
