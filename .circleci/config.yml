@@ -62,22 +62,22 @@ jobs:
     steps:
     - attach_workspace:
         at: /tmp/workspace
-    - setup_remote_docker
+
     - run: docker load -i /tmp/workspace/image.tar
 
     - run: mkdir -p ${HOME}/outputs1
     - run: mkdir -p ${HOME}/outputs2
 
-      # print version
     - run:
+        name: "Print version"
         command: |
           docker run -ti --rm --read-only \
             -v ${HOME}/test_data:/bids_dir \
             -v ${HOME}/outputs1:/outputs1 \
             snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dir /outputs1 participant --version
 
-      # test on dummy data
     - run:
+        name: "Test on dummy data"
         command: |
           docker run -ti --rm --read-only \
             -v /test_data:/bids_dir \
@@ -95,25 +95,16 @@ jobs:
     - run: docker load -i /tmp/workspace/image.tar
 
     - run: mkdir -p ${HOME}/outputs1
-    - run: mkdir -p ${HOME}/outputs2
-
-      # participant level tests for single session dataset
     - run:
+        name: participant level tests for single session dataset
         command: |
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs1:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02
         no_output_timeout: 6h
     - run:
-        command: |
-          docker run -ti --rm --read-only \
-            -v ${HOME}/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
-        no_output_timeout: 6h
-      # group level test for single session dataset
-    - run:
+        name: group level tests for single session dataset    
         command: |
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test1:/bids_dataset \
@@ -121,23 +112,17 @@ jobs:
             snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
         no_output_timeout: 6h
 
-      # participant level tests for a longitudinal dataset
+    - run: mkdir -p ${HOME}/outputs2
     - run:
+        name: participant level tests for a longitudinal dataset   
         command: |
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test2:/bids_dataset \
             -v ${HOME}/outputs2:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02
         no_output_timeout: 6h
     - run:
-        command: |
-          docker run -ti --rm --read-only \
-            -v ${HOME}/data/ds114_test2:/bids_dataset \
-            -v ${HOME}/outputs2:/outputs \
-            snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
-        no_output_timeout: 6h
-      # group level test for a longitudinal dataset
-    - run:
+        name: group level tests for a longitudinal dataset       
         command: |
           docker run -ti --rm --read-only \
             -v ${HOME}/data/ds114_test2:/bids_dataset \
