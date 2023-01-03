@@ -4,7 +4,6 @@ version: 2
 jobs:
   build:
     machine:
-      # https://circleci.com/developer/machine/image/ubuntu-2204
       image: ubuntu-2204:2022.10.2
 
     steps:
@@ -50,8 +49,8 @@ jobs:
         - image.tar
 
   test_on_internal_data:
-    docker:
-    - image:  ubuntu-2204:2022.10.2
+    machine:
+      image: ubuntu-2204:2022.10.2
 
     steps:
     - attach_workspace:
@@ -79,8 +78,8 @@ jobs:
 
 
   test_on_real_data:
-    docker:
-    - image:  ubuntu-2204:2022.10.2
+    machine:
+      image: ubuntu-2204:2022.10.2
 
     steps:
     - attach_workspace:
