@@ -92,7 +92,6 @@ jobs:
     steps:
     - attach_workspace:
         at: /tmp/workspace
-    - setup_remote_docker
     - run: docker load -i /tmp/workspace/image.tar
 
     - run: mkdir -p ${HOME}/outputs1
