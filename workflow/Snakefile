@@ -1,9 +1,10 @@
-#---- begin snakebids boilerplate ----------------------------------------------
+# ---- begin snakebids boilerplate ----------------------------------------------
 
 import snakebids
 from snakebids import bids
 
-configfile: 'config/snakebids.yml'
+
+configfile: "config/snakebids.yml"
 
 
 # parse bids dataset with snakebids
@@ -19,59 +20,53 @@ inputs = snakebids.generate_inputs(
 )
 
 
-#this adds constraints to the bids naming
-wildcard_constraints:  **snakebids.get_wildcard_constraints(config['pybids_inputs'])
+# this adds constraints to the bids naming
+wildcard_constraints:
+    **snakebids.get_wildcard_constraints(config["pybids_inputs"]),
 
-#---- end snakebids boilerplate ------------------------------------------------
+
+# ---- end snakebids boilerplate ------------------------------------------------
 
 
 rule bet:
-    input: 
-        inputs.input_path['t1']
+    input:
+        inputs.input_path["t1"],
     output:
         bids(
-            root=config['root'],
-            datatype='anat',
-            desc='brain',
-            suffix='T1w.nii.gz',
-            **inputs.input_wildcards['t1']
-        )
-    container: config['singularity']['fsl']
+            root=config["root"],
+            datatype="anat",
+            desc="brain",
+            suffix="T1w.nii.gz",
+            **inputs.input_wildcards["t1"]
+        ),
+    container:
+        config["singularity"]["fsl"]
     log:
-        bids(
-            root='logs',
-            suffix='bet.log',
-            **inputs.input_wildcards['t1']
-        )
-    shell: 'bet {input} {output}'
+        bids(root="logs", suffix="bet.log", **inputs.input_wildcards["t1"]),
+    shell:
+        "bet {input} {output}"
 
 
 rule calc_avg_brain_size:
     input:
-        brains=expand(rules.bet.output,
-            zip,
-            **inputs.input_zip_lists['t1'])
+        brains=expand(rules.bet.output, zip, **inputs.input_zip_lists["t1"]),
     output:
         txt=bids(
-                root=config['root'],
-                suffix='avgbrainsize.txt',
-                include_subject_dir=False,
-                include_session_dir=False)
-    script: 'scripts/calc_avg_brain_size.py'
-        
-            
+            root=config["root"],
+            suffix="avgbrainsize.txt",
+            include_subject_dir=False,
+            include_session_dir=False,
+        ),
+    script:
+        "scripts/calc_avg_brain_size.py"
+
+
 rule all_participant:
     input:
-        expand(
-            rules.bet.output,
-            zip,
-            **inputs.input_zip_lists['t1']
-        )
+        expand(rules.bet.output, zip, **inputs.input_zip_lists["t1"]),
     default_target: True
+
 
 rule all_group:
     input:
-        rules.calc_avg_brain_size.output
-
-
-
+        rules.calc_avg_brain_size.output,
