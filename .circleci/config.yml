@@ -1,5 +1,5 @@
 ---
-version: 2
+version: 2.1
 
 jobs:
   build:
@@ -91,7 +91,7 @@ jobs:
         name: participant level tests for single session dataset
         command: |
           docker run -ti --rm --read-only \
-            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs1:/outputs \
             snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02 -c1
         no_output_timeout: 6h
@@ -99,7 +99,7 @@ jobs:
         name: group level tests for single session dataset    
         command: |
           docker run -ti --rm --read-only \
-            -v ${HOME}/data/ds114_test1:/bids_dataset \
+            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
             -v ${HOME}/outputs1:/outputs \
             snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group -c1
         no_output_timeout: 6h
@@ -109,7 +109,7 @@ jobs:
         name: participant level tests for a longitudinal dataset   
         command: |
           docker run -ti --rm --read-only \
-            -v ${HOME}/data/ds114_test2:/bids_dataset \
+            -v /tmp/workspace/data/ds114_test2:/bids_dataset \
             -v ${HOME}/outputs2:/outputs \
             snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 02 -c1
         no_output_timeout: 6h
@@ -117,7 +117,7 @@ jobs:
         name: group level tests for a longitudinal dataset       
         command: |
           docker run -ti --rm --read-only \
-            -v ${HOME}/data/ds114_test2:/bids_dataset \
+            -v /tmp/workspace/data/ds114_test2:/bids_dataset \
             -v ${HOME}/outputs2:/outputs \
             snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group -c1
         no_output_timeout: 6h
@@ -128,7 +128,6 @@ jobs:
         path: ~/output2
 
 workflows:
-  version: 2
   build-test-deploy:
     jobs:
     - build
