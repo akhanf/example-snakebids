@@ -8,9 +8,7 @@ debug: false
 derivatives: false  # will search in bids/derivatives if True; can also be path(s) to derivatives datasets
 
 # list of analysis levels in the bids app
-analysis_levels: &analysis_levels
-  - participant
-  - group
+analysis_levels: &analysis_levels [participant, group]
 
 
 root: results
@@ -18,7 +16,7 @@ root: results
 # mapping from analysis_level to set of target rules or files
 targets_by_analysis_level:
   participant:
-    - all_participant    # if '', then the default target rule is run
+    - all_participant  # if '', then the default target rule is run
   group:
     - all_group
 
