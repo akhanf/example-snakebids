@@ -9,18 +9,17 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys:
-            - my_cache
+          keys: [my_cache]
 
       - run:
-          name: "Get test data: ds114_test1"
+          name: 'Get test data: ds114_test1'
           command: |
             if [[ ! -d ~/data/ds114_test1 ]]; \
               then wget -c -O ${HOME}/ds114_test1.tar "https://osf.io/download/zerfq/" && \
               mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data;
             fi
       - run:
-          name: "Get test data: ds114_test2"
+          name: 'Get test data: ds114_test2'
           command: |
             if [[ ! -d ~/data/ds114_test2 ]]; \
               then wget -c -O ${HOME}/ds114_test2.tar "https://osf.io/download/eg4ma/" && \
@@ -33,22 +32,17 @@ jobs:
             fi
             git describe --tags --always > version
             docker build -t snakebids/${CIRCLE_PROJECT_REPONAME,,} .
-            mkdir -p ~/docker; 
+            mkdir -p ~/docker;
             docker save "snakebids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
           no_output_timeout: 6h
 
       - save_cache:
           key: my_cache
-          paths:
-            - ~/docker
-            - ~/data
+          paths: [~/docker, ~/data]
 
       - persist_to_workspace:
           root: /home/circleci
-          paths:
-          - data/ds114_test1
-          - data/ds114_test2
-          - docker/image.tar
+          paths: [data/ds114_test1, data/ds114_test2, docker/image.tar]
 
   test_on_internal_data:
     machine:
@@ -63,7 +57,7 @@ jobs:
       - run: mkdir -p ${HOME}/outputs1
 
       - run:
-          name: "Print version"
+          name: Print version
           command: |
             docker run -ti --rm \
               -v ${HOME}/test_data:/bids_dir \
@@ -71,7 +65,7 @@ jobs:
               snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dir /outputs1 participant --version
 
       - run:
-          name: "Test on dummy data"
+          name: Test on dummy data
           command: |
             docker run -ti --rm \
               -v /test_data:/bids_dir \
@@ -125,7 +119,7 @@ jobs:
               -v ${HOME}/outputs2:/outputs \
               snakebids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group -c1
             ls ${HOME}/outputs2
-            ls ${HOME}/outputs2/sub*              
+            ls ${HOME}/outputs2/sub*
           no_output_timeout: 6h
 
       - store_artifacts:
@@ -138,8 +132,7 @@ workflows:
     jobs:
       - build
       - test_on_real_data:
-          requires:
-            - build
+          requires: [build]
       - test_on_internal_data:
           requires:
             - build
